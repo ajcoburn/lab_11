@@ -98,6 +98,13 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
    else 
    {
       //DO THIS
+      tNode = tNode->getLeft();
+      while (tNode->getRight()!= NULL)
+   {
+      tNode = tNode->getRight();
+   }
+
+   T* item = tNode->getItem();
 
 
 
