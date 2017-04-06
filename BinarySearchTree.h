@@ -70,9 +70,24 @@ template < class T >
 TreeNode<T>* BinarySearchTree<T>::removeItem(TreeNode<T>* tNode, String* sk)
 {
    //DO THIS
+	int compKey = 1;
+	T* item = tNode->getItem();
 	
+	while (compKey != 0)
+	{
+		compKey = (*compare_keys) (sk, item);
+		if(compKey < 0)
+			tNode = tNode->getLeft();
+		
+		
+		else if(compKey > 0)
+			tNode = tNode->getRight();
+		
+		item = tNode->getItem();
+	}
 
-
+	return tNode;
+	
 }
 
 template < class T >
@@ -98,18 +113,14 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
    else 
    {
       //DO THIS
-      tNode = tNode->getLeft();
-      while (tNode->getRight()!= NULL)
-   {
-      tNode = tNode->getRight();
-   }
+		tNode = tNode->getLeft();
 
-   T* item = tNode->getItem();
-
-
-
-
-
+		while (tNode->getRight()!= NULL)
+		{
+			tNode = tNode->getRight();
+		}
+		
+		T* item = tNode->getItem();
    }
 }
 
@@ -140,6 +151,9 @@ TreeNode<T>* BinarySearchTree<T>::removeLeftMost(TreeNode<T>* tNode)
 		tNode = tNode->getLeft();
 		tNode = removeLeftMost(tNode);
 	}
+	
+	tNode = tNode->getRight();
+	
 	return tNode;
 }
 
