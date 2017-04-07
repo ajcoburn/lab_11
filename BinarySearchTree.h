@@ -113,14 +113,42 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
    else 
    {
       //DO THIS
-		tNode = tNode->getLeft();
+		TreeNode<T>* tempRight = tNode->getRight();
+		TreeNode<T>* tempLeft = tNode->getLeft();
+		TreeNode<T>* temp = tNode;
+		TreeNode<T>* IOS = tNode;
+		TreeNode<T>* IOS_left;
+		TreeNode<T>* IOS_temp;
+		
+		IOS = IOS->getLeft();
 
-		while (tNode->getRight()!= NULL)
+		while (IOS->getRight()!= NULL)
 		{
-			tNode = tNode->getRight();
+			IOS_temp = IOS;
+			IOS = IOS->getRight();
+			IOS_left = IOS->getLeft();
 		}
 		
-		T* item = tNode->getItem();
+		tNode = IOS;
+		IOS->setLeft(tempLeft);
+		IOS->setRight(tempRight);
+		//IOS_temp->setLeft(IOS_left);
+		T* item_1 = IOS_temp->getItem();
+		T* item_2 = IOS_left->getItem();
+	
+		int compare = (*comp_items) (item_1, item_2)
+		if(compare < 0)
+		{
+			IOS_temp->setLeft(IOS_left);
+		}
+		
+		else if(compare > 0)
+		{
+			IOS_temp->setRight(IOS_left);
+		}
+		
+		
+		return temp;
    }
 }
 
@@ -161,12 +189,14 @@ template < class T >
 T** BinarySearchTree<T>::toArray()
 {
    //DO THIS
-	iterator = new BinaryTreeIterator<T>(root);
+	BinaryTreeIterator<T>* iter = new BinaryTreeIterator<T>(root);
 	int i = 0;
 	
 	T** items = new T*[];
 	
-	while(!iterator->hasNext())
+	iter->setInorder();
+	
+	while(!iter->hasNext())
 	{
 		items[i] = iterator->next();
 		i++;
@@ -178,9 +208,40 @@ template < class T >
 T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (T* item_1, T* item_2), int (*comp_keys) (String* key, T* item))
 {
    //DO THIS
+	TreeNode<T>* rNode = new TreeNode<T>(items[0]);
+	setRootNode(rNode);
+	int compare = 0;
+	T* item_1;
+	T* item_2;
+	
+	for(int i = 1; i < num_itemss; i++)
+	{
+		item_1 = items[i-1];
+		item_2 = items[i];
+		TreeNode<T>* tNode_1 = new TreeNode<T>(item_1);
+		TreeNode<T>* tNode_2 = new TreeNode<T>(item_2);
+		
+		compare = (*comp_items) (item_1, item_2);
+		if(compare < 0)
+		{
+			tNode_1->setLeft(tNode_2);
+		}
+		
+		else if(compare > 0)
+		{
+			tNOde_1->setRight(tNode_2);
+		}
+		
+		else
+		{
+			continue;
+		}
+		
+		delete tNode_1;
+		delete tNode_2;
+	}
 
-
-
+	delete rNode;
 }
 
 template < class T >
