@@ -136,16 +136,7 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
 		T* item_1 = IOS_temp->getItem();
 		T* item_2 = IOS_left->getItem();
 	
-		int compare = (*comp_items) (item_1, item_2)
-		if(compare < 0)
-		{
-			IOS_temp->setLeft(IOS_left);
-		}
-		
-		else if(compare > 0)
-		{
-			IOS_temp->setRight(IOS_left);
-		}
+		IOS_temp->setRight(IOS_left);
 		
 		
 		return temp;
@@ -192,7 +183,7 @@ T** BinarySearchTree<T>::toArray()
 	BinaryTreeIterator<T>* iter = new BinaryTreeIterator<T>(root);
 	int i = 0;
 	
-	T** items = new T*[];
+	T** items = new T*();
 	
 	iter->setInorder();
 	
@@ -229,7 +220,7 @@ T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (
 		
 		else if(compare > 0)
 		{
-			tNOde_1->setRight(tNode_2);
+			tNode_1->setRight(tNode_2);
 		}
 		
 		else
