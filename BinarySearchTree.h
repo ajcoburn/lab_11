@@ -200,7 +200,7 @@ T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (
 {
    //DO THIS
 	TreeNode<T>* rNode = new TreeNode<T>(items[0]);
-	setRootNode(rNode);
+	//setRootNode(rNode);
 	int compare = 0;
 	T* item_1;
 	T* item_2;
