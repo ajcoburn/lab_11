@@ -45,15 +45,16 @@ bool MyApp::OnInit()
    //DO THIS
    //test your tree sort method
    CD** unsorted_cds = cds->toArray();
-   //CD** sorted_cds = 
-
-
-
-
-
-
-
-
+   int size = cds->size();
+   CD** sorted_cds = BinarySearchTree<CD>::treeSort(unsorted_cds, size, &CD::compare_items, &CD::compare_keys);
+  
+  cout << "\nbst is now sorted using treeSort:\n\n";
+  cout <<"hey";
+  for (int i = 0; i < num_items; i++)
+   {
+      CD* cd = sorted_cds[i];
+      cd->displayCD();
+   }
 
    delete cds;
    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
