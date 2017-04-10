@@ -189,7 +189,7 @@ T** BinarySearchTree<T>::toArray()
 	
 	while(!iter->hasNext())
 	{
-		items[i] = iterator->next();
+		items[i] = iter->next();
 		i++;
 	}
 	return items;
@@ -198,41 +198,17 @@ T** BinarySearchTree<T>::toArray()
 template < class T >
 T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (T* item_1, T* item_2), int (*comp_keys) (String* key, T* item))
 {
-   //DO THIS
-	TreeNode<T>* rNode = new TreeNode<T>(items[0]);
-	//setRootNode(rNode);
-	int compare = 0;
-	T* item_1;
-	T* item_2;
-	
-	for(int i = 1; i < num_itemss; i++)
-	{
-		item_1 = items[i-1];
-		item_2 = items[i];
-		TreeNode<T>* tNode_1 = new TreeNode<T>(item_1);
-		TreeNode<T>* tNode_2 = new TreeNode<T>(item_2);
-		
-		compare = (*comp_items) (item_1, item_2);
-		if(compare < 0)
-		{
-			tNode_1->setLeft(tNode_2);
-		}
-		
-		else if(compare > 0)
-		{
-			tNode_1->setRight(tNode_2);
-		}
-		
-		else
-		{
-			continue;
-		}
-		
-		delete tNode_1;
-		delete tNode_2;
-	}
+  
+	//DO THIS
+``BinarySearchTree<T>* Bst = new BinarySearchTree<T>(comp_items, comp_keys);
+   for (int i = 0; i < num_itemss; i++)
+   {
+      Bst->insert(items[i]);
+   }
 
-	delete rNode;
+   items = Bst->toArray();
+
+   return items;
 }
 
 template < class T >
