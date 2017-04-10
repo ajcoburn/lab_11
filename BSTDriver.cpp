@@ -46,17 +46,21 @@ bool MyApp::OnInit()
    //test your tree sort method
    CD** unsorted_cds = cds->toArray();
    int size = cds->size();
-   CD** sorted_cds = BinarySearchTree<CD>::treeSort(unsorted_cds, size, &CD::compare_items, &CD::compare_keys);
+    
+   CD** bst1 = BinarySearchTree<CD>::treeSort(unsorted_cds, size, &CD::compare_items, &CD::compare_keys);
+   ListArrayIterator<CD>* iter2 = cds->iterator();
   
   cout << "\nbst is now sorted using treeSort:\n\n";
   cout <<"hey";
-  for (int i = 0; i < num_items; i++)
+    
+  for (int i = 0; i < size; i++)
    {
-      CD* cd = sorted_cds[i];
+      CD* cd = bst1[i];
       cd->displayCD();
    }
-
-   delete cds;
+  delete bst1;
+  delete cds;
+    
    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
    frame = new wxFrame((wxFrame *)NULL, -1,  wxT("AVL Tree"), wxPoint(500,500), wxSize(1100,600));
  
