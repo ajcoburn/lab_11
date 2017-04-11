@@ -63,30 +63,37 @@ template < class T >
 void BinarySearchTree<T>::remove(String* sk)
 {
    //DO THIS
-	TreeNode<T>* item = removeItem(root, sk);
+	root = removeItem(root, sk);
 }
 
 template < class T >
 TreeNode<T>* BinarySearchTree<T>::removeItem(TreeNode<T>* tNode, String* sk)
 {
    //DO THIS
-	int compKey = 1;
+	if(tNode == NULL)
+		return tNode;
+	
 	T* item = tNode->getItem();
 	
-	while (compKey != 0)
+	int compare = (*compare_keys) (sk, item);
+	if(compare < 0)
 	{
-		compKey = (*compare_keys) (sk, item);
-		if(compKey < 0)
-			tNode = tNode->getLeft();
-		
-		
-		else if(compKey > 0)
-			tNode = tNode->getRight();
-		
-		item = tNode->getItem();
+		TreeNode<T>* temp = removeItem(tNode->getLeft(), sk);
+		tNode->setLeft(temp);
+		return tNode;
 	}
-
-	return tNode;
+	else if(compare > 0)
+	{
+		TreeNode<T>* temp = removeItem(tNode->getRight(), sk);
+		tNode->setRight(temp);
+		return tNode;
+	}
+	else
+	{
+		sze--;
+		TreeNode<T>* node = removeNode(tNode);
+		return node;
+	}
 	
 }
 
@@ -113,33 +120,15 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
    else 
    {
       //DO THIS
-		TreeNode<T>* tempRight = tNode->getRight();
-		TreeNode<T>* tempLeft = tNode->getLeft();
-		TreeNode<T>* temp = tNode;
-		TreeNode<T>* IOS = tNode;
-		TreeNode<T>* IOS_left;
-		TreeNode<T>* IOS_temp;
+		TreeNode<T>* left = tNode->getLeft();
+		TreeNode<T>* right = tNode->getRight();
+		T* item = findLeftMost(right);
 		
-		IOS = IOS->getLeft();
-
-		while (IOS->getRight()!= NULL)
-		{
-			IOS_temp = IOS;
-			IOS = IOS->getRight();
-			IOS_left = IOS->getLeft();
-		}
+		tNode->setItem(item);
+		TreeNode<T>* temp = removeLeftMost(right);
+		tNode->setRight(temp);
 		
-		tNode = IOS;
-		IOS->setLeft(tempLeft);
-		IOS->setRight(tempRight);
-		//IOS_temp->setLeft(IOS_left);
-		T* item_1 = IOS_temp->getItem();
-		T* item_2 = IOS_left->getItem();
-	
-		IOS_temp->setRight(IOS_left);
-		
-		
-		return temp;
+		return tNode;
    }
 }
 
@@ -163,35 +152,40 @@ TreeNode<T>* BinarySearchTree<T>::removeLeftMost(TreeNode<T>* tNode)
 {
    //DO THIS (recursion)
 	if(tNode->getLeft() == NULL)
-		return tNode;
+	{
+		TreeNode<T>* right = tNode->getRight();
+		delete tNode;
+		
+		return right;
+	}
 	
 	else
 	{
-		tNode = tNode->getLeft();
-		tNode = removeLeftMost(tNode);
+		TreeNode<T>* left = tNode->getLeft();
+		TreeNode<T>* temp = removeLeftMost(left);
+		tNode->setLeft(temp);
+		
+		return tNode;
 	}
-	
-	tNode = tNode->getRight();
-	
-	return tNode;
 }
 
 template < class T >
 T** BinarySearchTree<T>::toArray()
 {
    //DO THIS
-	BinaryTreeIterator<T>* iter = new BinaryTreeIterator<T>(root);
-	int i = 0;
+	T** items = new T*[sze];
 	
-	T** items = new T*();
+	BinaryTreeIterator<T>* iter = iterator();
 	
 	iter->setInorder();
 	
-	while(!iter->hasNext())
+	int i = 0;
+	while(iter->hasNext())
 	{
 		items[i] = iter->next();
 		i++;
 	}
+	delete iter;
 	return items;
 }
 
@@ -200,14 +194,14 @@ T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (
 {
   
 	//DO THIS
-``BinarySearchTree<T>* Bst = new BinarySearchTree<T>(comp_items, comp_keys);
+	BinarySearchTree<T>* Bst = new BinarySearchTree<T>(comp_items, comp_keys);
    for (int i = 0; i < num_itemss; i++)
    {
       Bst->insert(items[i]);
    }
 
    items = Bst->toArray();
-
+	delete Bst;
    return items;
 }
 
