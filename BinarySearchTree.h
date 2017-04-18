@@ -4,11 +4,10 @@
 #include "BinaryTreeIterator.h"
 #include "TreeNode.h"
 #include "Text.h"
-using CSC2110::String;
 #include "Line.h"
 #include "Drawable.h"
-#include "wx/wx.h"
-
+#include <iostream>
+using CSC2110::String;
 
 template < class T >
 class BinarySearchTree : public Drawable
@@ -34,7 +33,12 @@ class BinarySearchTree : public Drawable
       int (*compare_items) (T* item_1, T* item_2);
       int (*compare_keys) (String* key, T* item);
 
-      void drawRec(TreeNode<T>* tNode, wxDC& dc, Line* line, int x_parent, int x_curr, int y_curr);
+      void minimize(T** items, int first, int last);
+      T** toArrayComplete();
+      bool traverseComplete(T** items, int array_length, TreeNode<T>* tNode, int index);
+      void minimizeComplete(T** items, int first, int last);
+
+      virtual void drawRec(TreeNode<T>* tNode, wxDC& dc, Line* line, int x_parent, int x_curr, int y_curr);
 
    public:
       BinarySearchTree(int (*comp_items) (T* item_1, T* item_2), int (*comp_keys) (String* key, T* item));
@@ -53,48 +57,224 @@ class BinarySearchTree : public Drawable
       bool isBalanced();
 
       T** toArray();
-      static T** treeSort(T** items, int num_itemss, int (*comp_items) (T* item_1, T* item_2), int (*comp_keys) (String* key, T* item));
 
-      void draw(wxDC& dc, int width, int height);
-      void mouseClicked(int x, int y);
+      virtual void draw(wxDC& dc, int width, int height);
+      virtual void mouseClicked(int x, int y);
+
+      BinarySearchTree<T>* minimize();
+      BinarySearchTree<T>* minimizeComplete();
+
 };
+
+template < class T >
+int BinarySearchTree<T>::getHeight()
+{
+   //DO THIS
+   return getHeight(getRootNode());
+}
+
+template < class T >
+int BinarySearchTree<T>::getHeight(TreeNode<T>* tNode)
+{
+   //DO THIS
+	if (tNode == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		int left = getHeight(tNode->getLeft());
+		int right = getHeight(tNode->getRight());
+
+		if (left >= right)
+		{
+			//std::cout << "LEFT: " << (left+1) /*<< "\nRIGHT: " << right */<< "\n\n";
+			return left + 1;
+		}
+		else
+		{
+			//std::cout << "RIGHT: " << (right + 1) << "\n";
+			return right + 1;
+		}
+	}
+}
+
+template < class T >
+bool BinarySearchTree<T>::isBalanced()
+{
+   //DO THIS
+	bool balance = isBalanced(root);
+	if(balance)
+		std::cout<< "This is a balanced Binary Search Tree\n";
+	else
+		std::cout << "This is an unbalanced Binary Search Tree\n";
+	
+	return balance;
+}
+
+template < class T >
+bool BinarySearchTree<T>::isBalanced(TreeNode<T>* tNode)
+{
+   //DO THIS
+	if(tNode == NULL)
+		return true;
+	
+	TreeNode<T>* left = tNode->getLeft();
+	TreeNode<T>* right = tNode->getRight();
+	
+	bool left_bal = isBalanced(left);
+	if(!left_bal)
+		return false;
+	
+	bool right_bal = isBalanced(right);
+	if(!right_bal)
+		return false;
+	
+	int l_height = getHeight(left);
+	int r_height = getHeight(right);
+	int h_diff = abs(l_height - r_height);
+	if(h_diff > 1)
+		return false;
+	
+	return true;
+}
+
+template < class T >
+BinarySearchTree<T>* BinarySearchTree<T>::minimize()
+{
+   T** items = toArray();
+   BinarySearchTree<T>* bst = new BinarySearchTree<T>(compare_items, compare_keys);
+   //DO THIS
+	bst->minimize(items, 0, sze-1);
+	return bst;
+}
+
+template < class T >
+void BinarySearchTree<T>::minimize(T** items, int first, int last)
+{
+   //DO THIS (recursive minimize method)
+	if( first <= last)	
+	{	
+		int mid = (last+first)/2;
+		this->insert(items[mid]);
+	
+		minimize(items, first, mid-1);
+		minimize(items, mid+1, last);
+	}
+}
+
+template < class T >
+T** BinarySearchTree<T>::toArray()
+{
+   T** items = new T*[sze];
+
+   BinaryTreeIterator<T>* iter = iterator();
+   iter->setInorder();
+   int i = 0;
+   while(iter->hasNext())
+   {
+      items[i] = iter->next();
+      i++;
+   }
+   delete iter;
+
+   return items;
+}
+
+template < class T >
+BinarySearchTree<T>* BinarySearchTree<T>::minimizeComplete()
+{
+   T** items = toArray();
+   BinarySearchTree<T>* bst = new BinarySearchTree<T>(compare_items, compare_keys);
+   //DO THIS
+	bst->minimizeComplete(items, 0, sze-1);
+	return bst;
+}
+
+template < class T >
+void BinarySearchTree<T>::minimizeComplete(T** items, int first, int last)
+{
+   double TOL = 0.0001;
+   //the log base e of 2 is 0.69314718
+   //one over 0.69314718 = 1.442695042
+   double log_factor = 1.442695042;
+
+   if (first <= last)
+   {
+      //the rounding ensures that mid is included in the count (it is necessary)
+      int mid = (int) ((last + first)/2.0 + 0.5);
+
+      //start at mid and gradually move to the right to find the next element to insert into the tree
+      //if first and last are the same, mid automatically succeeds (leaf element)
+      if (first < last)
+      {
+         //initial log computations using mid
+         double k_left =  log(mid - first +1) * log_factor;                 //log base 2 of the number of items to the left of mid (including mid)
+         double int_k_left = (int) (k_left + 0.5);                //same as above but rounded
+         double k_right = log(last - first +1) * log_factor;
+         double int_k_right = (int) (k_right + 0.5);
+
+         //keep searching for spot where the number of elements to the left of mid is 2^k - 1 (a full tree)
+         //which means the number of elements to the left of mid including mid is 2^k 
+         //or the number of elements to the right of mid is 2^k
+         //compare the direct log computation and the computation cast to an int
+         //to determine if the direct computation is an int
+         while (fabs(k_left - int_k_left) > TOL && fabs(k_right - int_k_right) > TOL)
+         {
+            mid++;
+            //DO THIS
+            //try again with mid shifted one to the right
+			 k_left =  log(mid - first + 1) * log_factor;                 //log base 2 of the number of items to the left of mid (including mid)
+			 int_k_left = (int) (k_left + 0.5);                //same as above but rounded
+			 k_right = log(last - mid + 1) * log_factor;
+			 int_k_right = (int) (k_right + 0.5);
+         }
+		 
+      }
+
+      //DO THIS
+      //found the next item to insert into the tree
+      //get it, insert it, and make two recursive calls
+		this->insert(items[mid]);
+		minimizeComplete(items, first, mid-1);
+		minimizeComplete(items, mid+1, last);
+   }
+}
 
 template < class T >
 void BinarySearchTree<T>::remove(String* sk)
 {
-   //DO THIS
-	root = removeItem(root, sk);
+   root = removeItem(root, sk);
 }
 
 template < class T >
 TreeNode<T>* BinarySearchTree<T>::removeItem(TreeNode<T>* tNode, String* sk)
 {
-   //DO THIS
-	if(tNode == NULL)
-		return tNode;
-	
-	T* item = tNode->getItem();
-	
-	int compare = (*compare_keys) (sk, item);
-	if(compare < 0)
-	{
-		TreeNode<T>* temp = removeItem(tNode->getLeft(), sk);
-		tNode->setLeft(temp);
-		return tNode;
-	}
-	else if(compare > 0)
-	{
-		TreeNode<T>* temp = removeItem(tNode->getRight(), sk);
-		tNode->setRight(temp);
-		return tNode;
-	}
-	else
-	{
-		sze--;
-		TreeNode<T>* node = removeNode(tNode);
-		return node;
-	}
-	
+   if (tNode == NULL)
+   { 
+      return tNode;  //take no action, item not present
+   }
+
+   T* node_items = tNode->getItem();
+   int comp = (*compare_keys) (sk, node_items);
+
+   if (comp == 0)
+   {
+      sze--;
+      return removeNode(tNode);  //delete the node
+   }
+   else if (comp < 0)
+   {
+      TreeNode<T>* subtree = removeItem(tNode->getLeft(), sk);
+      tNode->setLeft(subtree);
+      return tNode;
+   }
+   else
+   {
+      TreeNode<T>* subtree = removeItem(tNode->getRight(), sk);
+      tNode->setRight(subtree);
+      return tNode;
+   }
 }
 
 template < class T >
@@ -119,159 +299,41 @@ TreeNode<T>* BinarySearchTree<T>::removeNode(TreeNode<T>* tNode)
    }
    else 
    {
-      //DO THIS
-		TreeNode<T>* left = tNode->getLeft();
-		TreeNode<T>* right = tNode->getRight();
-		T* item = findLeftMost(right);
-		
-		tNode->setItem(item);
-		TreeNode<T>* temp = removeLeftMost(right);
-		tNode->setRight(temp);
-		
-		return tNode;
+      T* replace = findLeftMost(tNode->getRight());
+      tNode->setItem(replace);
+      TreeNode<T>* subtree = removeLeftMost(tNode->getRight());
+      tNode->setRight(subtree);
+      return tNode;
    }
 }
 
 template < class T >
 T* BinarySearchTree<T>::findLeftMost(TreeNode<T>* tNode)
 {
-   //DO THIS (use a while loop)
-
-	while (tNode->getLeft() != NULL)
-	{
-		tNode = tNode->getLeft();
-	}
-	
-	T* item = tNode->getItem();
-	
-	return item;
+   while (tNode->getLeft() != NULL)
+   {
+      tNode = tNode->getLeft();
+   }
+   return tNode->getItem();
 }
 
 template < class T >
 TreeNode<T>* BinarySearchTree<T>::removeLeftMost(TreeNode<T>* tNode)
 {
-   //DO THIS (recursion)
-	if(tNode->getLeft() == NULL)
-	{
-		TreeNode<T>* right = tNode->getRight();
-		delete tNode;
-		
-		return right;
-	}
-	
-	else
-	{
-		TreeNode<T>* left = tNode->getLeft();
-		TreeNode<T>* temp = removeLeftMost(left);
-		tNode->setLeft(temp);
-		
-		return tNode;
-	}
-}
+   TreeNode<T>* subtree;
 
-template < class T >
-T** BinarySearchTree<T>::toArray()
-{
-   //DO THIS
-	T** items = new T*[sze];
-	
-	BinaryTreeIterator<T>* iter = iterator();
-	
-	iter->setInorder();
-	
-	int i = 0;
-	while(iter->hasNext())
-	{
-		items[i] = iter->next();
-		i++;
-	}
-	delete iter;
-	return items;
-}
-
-template < class T >
-T** BinarySearchTree<T>::treeSort(T** items, int num_itemss, int (*comp_items) (T* item_1, T* item_2), int (*comp_keys) (String* key, T* item))
-{
-  
-	//DO THIS
-	BinarySearchTree<T>* Bst = new BinarySearchTree<T>(comp_items, comp_keys);
-   for (int i = 0; i < num_itemss; i++)
+   if (tNode->getLeft() != NULL)
    {
-      Bst->insert(items[i]);
-   }
-
-   items = Bst->toArray();
-	delete Bst;
-   return items;
-}
-
-template < class T >
-int BinarySearchTree<T>::getHeight()
-{
-   return getHeight(getRootNode());
-}
-
-template < class T >
-int BinarySearchTree<T>::getHeight(TreeNode<T>* tNode)
-{
-   if (tNode == NULL)
-   {
-       return 0;
+      subtree = removeLeftMost(tNode->getLeft());
+      tNode->setLeft(subtree);
+      return tNode;
    }
    else
    {
-       int left = getHeight(tNode->getLeft());
-       int right = getHeight(tNode->getRight());
-
-       if (left >= right)
-       {
-           return left + 1;
-       }
-       else
-       {
-          return right + 1;
-       }
+      subtree = tNode->getRight();
+      delete tNode;
+      return subtree;
    }
-}
-
-template < class T >
-bool BinarySearchTree<T>::isBalanced()
-{
-    bool bal = isBalanced(root);
-    return bal;
-}
-
-template < class T >
-bool BinarySearchTree<T>::isBalanced(TreeNode<T>* tNode)
-{
-   if (tNode == NULL)
-   {
-       return true;
-   }
-
-   TreeNode<T>* left = tNode->getLeft();
-   TreeNode<T>* right = tNode->getRight();
-
-   bool left_bal = isBalanced(left);
-   if (left_bal == false)
-   {
-      return false;
-   }
-
-   bool right_bal = isBalanced(right);
-   if (right_bal == false)
-   {
-      return false;
-   }
-
-   int lh = getHeight(left);
-   int rh = getHeight(right);
-   if (abs(lh - rh) > 1)
-   {
-      return false;
-   }
-
-   return true;
 }
 
 template < class T >
@@ -412,8 +474,57 @@ BinaryTreeIterator<T>* BinarySearchTree<T>::iterator()
    return new BinaryTreeIterator<T>(root);
 }
 
+//the test for completeness involves traversing the reference based BST and inserting the items in an array
+//the left and right child of a given node are placed in the array using the index formula for complete binary trees
+//the formulas should never result in going out of bounds of the array if the ref based BST is complete
 template < class T >
-void BinarySearchTree<T>::draw(wxDC& dc, int width, int height)
+bool BinarySearchTree<T>::traverseComplete(T** items, int array_length, TreeNode<T>* tNode, int index)
+{
+   if (tNode != NULL)
+   {
+      if (index >= array_length)
+      {
+         return false;  //return false (the ref based BST is not complete)
+      }
+
+      items[index] = tNode->getItem();
+
+      int left = 2*index + 1;
+      int right = left + 1;
+
+      bool bl = traverseComplete(items, array_length, tNode->getLeft(), left);
+      bool br = false;
+
+      if (bl)
+      {
+         br = traverseComplete(items, array_length, tNode->getRight(), right);
+      }
+
+      return (bl && br); //both left and right subtrees are complete
+   }
+
+   return true;  //return true
+}
+
+template < class T >
+T** BinarySearchTree<T>::toArrayComplete()
+{
+   T** items = new T*[sze];
+   bool result = traverseComplete(items, sze, getRootNode(), 0);
+
+   if (result)
+   {
+      return items;
+   }
+   else
+   {
+      delete[] items;
+      return NULL;
+   }
+}
+
+template < class T >
+void BinarySearchTree<T>::draw(wxDC&  dc, int width, int height)
 {
    Line line(new Color(0, 0, 0), 5.0);
    drawRec(getRootNode(), dc, &line, width, width/2, 20);
@@ -458,4 +569,5 @@ void BinarySearchTree<T>::drawRec(TreeNode<T>* tNode, wxDC& dc, Line* line, int 
 
 template < class T >
 void BinarySearchTree<T>::mouseClicked(int x, int y) {}
+
 #endif
